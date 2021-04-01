@@ -1,0 +1,73 @@
+---
+title: "World Population Density"
+author: "David Jackson"
+date: "3/31/2021"
+output: 
+  html_document: 
+    fig_width: 9
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(scales)
+library(dlookr)
+library(flextable)
+```
+
+## World Population Density
+
+```{r}
+population_density <- read.csv("./DATA/population-density.csv")
+names(population_density) <- c("Country","Code","Year","Density")
+```
+
+### Descriptive Statistics 
+
+```{r}
+  population_density %>% diagnose_numeric(Density) %>% flextable()
+```
+
+### Top Five Countries by Population Density for Year 2017
+
+```{r}
+population_density %>% filter(Year =="2017") %>% top_n(5) %>%
+  ggplot() + geom_col(aes(x=reorder(Country,Density),y=Density)) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Top Five Counties Ranked by Population Density(2017) ",
+       x="Counties Ranked",y="Population Density",caption = "(Source: http://ourworldindata.org)")
+
+```
+
+###  Five Countries With the Lowest Population Density for Year 2017
+
+```{r}
+population_density %>% filter(Year =="2017") %>% top_n(-5) %>%
+  ggplot() + geom_col(aes(x=reorder(Country,Density),y=Density)) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Five Counties With Lowest Population Density(2017) ",
+       x="Counties Ranked",y="Population Density",caption = "(Source: http://ourworldindata.org)") + coord_flip()
+
+```
+
+### Top Five Countries by Population Density  And Year (1961 - 2017)
+
+```{r}
+population_density %>% filter(Year =="2017") %>% top_n(5) %>% 
+  select(Code) %>% left_join(population_density,by = "Code") %>% 
+  ggplot() + geom_line(aes(x=Year,y=Density,col =Country)) +
+  scale_y_continuous(labels = comma) + 
+  labs(title = "Top Five Countries Ranked by Population Density(1961-2017",caption = "(Source: http://ourworldindata.org)")
+```
+
+###  Five Countries With the Lowest Population Density (1961 - 2017)
+
+```{r}
+population_density %>% filter(Year =="2017") %>% top_n(-5) %>% 
+  select(Code) %>% left_join(population_density,by = "Code") %>% 
+  ggplot() + geom_line(aes(x=Year,y=Density,col =Country)) +
+  scale_y_continuous(labels = comma) + 
+  labs(title = "Five Countries With Lowest Population Density(1961-2017)",caption = "(Source: http://ourworldindata.org)")
+```
